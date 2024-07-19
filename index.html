@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Check-In App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #search-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        #attendee-list {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .attendee-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .attendee-item:last-child {
+            border-bottom: none;
+        }
+        .check-in-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .checked-in {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #download-csv {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #pmi-id-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Event Check-In</h1>
+    <input type="text" id="search-input" placeholder="Search attendees...">
+    <div id="attendee-list"></div>
+    <input type="text" id="pmi-id-input" placeholder="Enter PMI ID">
+    <button id="download-csv">Download Check-In Data (CSV)</button>
+
+    <script>
+        const attendees = [
+            {id: "1935148", name: "Abhishek Mittal", email: "abhishekmittal@neulandlabs.com", checkedIn: false},
+            {id: "1939031", name: "Abilash Raghunathan", email: "abilash.raghunathan@gmail.com", checkedIn: false},
+            {id: "1939025", name: "Abinaya Ragavan", email: "abinaya1999sr@gmail.com", checkedIn: false},
+            {id: "1934043", name: "Aditya Rajendra Kaware", email: "aditya.kaware@gmail.com", checkedIn: false},
+            {id: "1935746", name: "Aiswarya Surapaneni", email: "Aishu.opal@gmail.com", checkedIn: false},
+            {id: "1933702", name: "Ajay Kumar Juluru", email: "ajayjuluru@gmail.com", checkedIn: false},
+            {id: "1935148", name: "Ajitabh Singh", email: "ajitabhsingh@neulandlabs.com", checkedIn: false},
+            {id: "1938580", name: "Akash Tiwari", email: "aakashtiwari07@gmail.com", checkedIn: false},
+            {id: "1938900", name: "Akil Vivek Jalisatgi", email: "akil.jalisatgi@carrier.com", checkedIn: false},
+            {id: "1938732", name: "Akkina, Vinod", email: "akkina.vinod1819@gmail.com", checkedIn: false},
+            {id: "1938451", name: "alice Jessuraj", email: "alice.jessuraj8@gmail.com", checkedIn: false},
+            {id: "1932954", name: "Alok Dalal", email: "alokdalal@gmail.com", checkedIn: false},
+            {id: "1938526", name: "Anantharam Vemuri", email: "anantharam.vemuri@gmail.com", checkedIn: false},
+            {id: "1938875", name: "ANEEL KUMARREDDY NALAMALPU", email: "AneelKumarReddy.Nalamalpu@synopsys.com", checkedIn: false},
+            {id: "1933668", name: "Anil Gaddam", email: "anilrkg916@gmail.com", checkedIn: false},
+            {id: "1933588", name: "Aniruddha Sarwate", email: "aniruddha.sarwate@hitachids.com", checkedIn: false},
+            {id: "1934810", name: "Anita Kata", email: "anita.kata@gmail.com", checkedIn: false},
+            {id: "1932260", name: "Anitha adiraj", email: "Adirajanitha759@gmail.com", checkedIn: false},
+            {id: "1933588", name: "Anupama Satapathy", email: "anupama.satapathy@hitachids.com", checkedIn: false},
+            {id: "1936554", name: "Anuradha Chanda", email: "anuradhachanda@gmail.com", checkedIn: false},
+            {id: "1932817", name: "Anusha Sarabu", email: "anusha.sarabu31@gmail.com", checkedIn: false},
+            {id: "1932969", name: "Appari Kasturi Rani", email: "rani.kasturiappa4i@gmail.com", checkedIn: false},
+            {id: "1933284", name: "Arun Kasula", email: "akasula@gmail.com", checkedIn: false},
+            {id: "1933061", name: "Arun mungara", email: "Arun.mungara@outlook.com", checkedIn: false},
+            {id: "1934127", name: "Arun Paul", email: "paul.arun128@gmail.com", checkedIn: false},
+            {id: "1933588", name: "Arvind Gurha", email: "arvind.gurha@hitachids.com", checkedIn: false},
+            {id: "1934157", name: "Arvind Juglan", email: "ajuglan@deloitte.com", checkedIn: false},
+            {id: "1932618", name: "Ashok Rathi", email: "ashok.rathi@beumer.com", checkedIn: false},
+            {id: "1933588", name: "Ashutosh Topey", email: "ashutosh.topey@hitachids.com", checkedIn: false},
+            {id: "1938900", name: "Ashvin Shivdas Baramade", email: "ashvin.baramade@carrier.com", checkedIn: false},
+            {id: "1932968", name: "Ashwin Preetham Kumar", email: "ashwindba123@gmail.com", checkedIn: false},
+            {id: "1932971", name: "Ataullah", email: "Ataullah.asad21@gmail.com", checkedIn: false},
+            {id: "1932668", name: "Babita J", email: "Babitaj@rediffmail.com", checkedIn: false},
+            {id: "1934146", name: "Bala Krishna Mekala", email: "mbalakrishnam@yahoo.com", checkedIn: false},
+            {id: "1938973", name: "Balaji Kaliappan", email: "balaji.kaliappan@carrier.com", checkedIn: false},
+            {id: "1935195", name: "Balarama Krishna Varanasi", email: "balaramakv@gmail.com", checkedIn: false},
+            {id: "1933077", name: "Basava Raju", email: "Raju.kakarla@gmail.com", checkedIn: false},
+            {id: "1938927", name: "Bharatraj Divya Singh", email: "divyasingh.bharatraj@carrier.com", checkedIn: false},
+            {id: "1938781", name: "Bhaskar Reddy G", email: "bhaskarr99@gmail.com", checkedIn: false},
+            {id: "1938868", name: "BHASKAR VEMANA", email: "bhaskar592@gmail.com", checkedIn: false},
+            {id: "1933676", name: "BIKRAMJIT SINGH", email: "bikramjitsingh1981@live.com", checkedIn: false},
+            {id: "1938918", name: "Bilal Ahmed Dastageer", email: "blal_ahmed@yahoo.com", checkedIn: false},
+            {id: "1933708", name: "Boddapalli Snigdha", email: "snigdha.boddapalli@gmail.com", checkedIn: false},
+            {id: "1938846", name: "Brahma Chary Padakanti", email: "brahma.padakanti@gmail.com", checkedIn: false},
+            {id: "1932944", name: "Chaitanya Devalraju", email: "chaitanyadevalraju@gmail.com", checkedIn: false},
+            {id: "1932965", name: "Chakrapani Sevva", email: "chakri_sevva@yahoo.com", checkedIn: false},
+            {id: "1938992", name: "Chand Basha Shaik", email: "chand.nestle@gmail.com", checkedIn: false},
+            {id: "1933588", name: "Chandrareddy Pindi", email: "chandu.pindi@hitachids.com", checkedIn: false},
+            {id: "1932177", name: "Chandrasekhar Karamsetty", email: "ckaramsetty@live.com", checkedIn: false},
+            {id: "1933588", name: "Chennakesava Reddy Ganesam", email: "chennakesavareddy.ganesam@hitachids.com", checkedIn: false},
+            {id: "1934045", name: "Chetan Srinivas", email: "chetansrinivas1405@gmail.com", checkedIn: false},
+            {id: "1933321", name: "chirravuri venkatasatyanarayana murthy", email: "murthycvsn@yahoo.com", checkedIn: false},
+            {id: "1936505", name: "Attendee 53", email: "attendee53@example.com", checkedIn: false},
+            {id: "1936505", name: "D S Chouhan", email: "dhansingh.chouhan@cyient.com"},
+            {id: "1933982", name: "Darshit Shah", email: "darshit.shah.nitie@gmail.com"},
+            {id: "1938599", name: "Debopam Chakrabarti", email: "debopamc@hotmail.com"},
+            {id: "1933530", name: "Deepika J", email: "deepika.jaiwala21@gmail.com"},
+            {id: "1933710", name: "Deepika Jillella", email: "deepika.jillella@gmail.com"},
+            {id: "1938428", name: "Deepshikha Chakraborty", email: "deepshikha.c22@gmail.com"},
+            {id: "1932953", name: "Deepti Bethel", email: "deeptib678@gmail.com"},
+            {id: "1933976", name: "Devasena Vathyam", email: "devasenavathyam@gmail.com"},
+            {id: "1938566", name: "DEVI POPURI", email: "devipopuri03@gmail.com"},
+            {id: "1933414", name: "Dhanunjaya Kumar Vangaveti", email: "Dhanuvangaveti@gmail.com"},
+            {id: "1932948", name: "Dhanunjaya Reddy Kalvapalli", email: "dhanunjayareddy123@gmail.com"},
+            {id: "1933951", name: "Dheeraj", email: "dhiruvasal@gmail.com"},
+            {id: "1933722", name: "Dilip Joseph", email: "dilip_bernard@yahoo.com"},
+            {id: "1932938", name: "Dinesh Sabnani", email: "dineshsabnani.pjm@gmail.com"},
+            {id: "1933672", name: "DIVYASREE POPURI", email: "divya.popuri9157@gmail.com"},
+            {id: "1932961", name: "Diwakar", email: "Catchdiwa@gmail.com"},
+            {id: "1938856", name: "Dr. GVL PRASAD", email: "prasad_gvl@vnrvjiet.in"},
+            {id: "1938822", name: "Duplicate", email: "vinatarala@gmail.com"},
+            {id: "1936620", name: "Gajender Bachula", email: "bsgajender@gmail.com"},
+            {id: "1938982", name: "GANESH KUMAR DWIVEDY", email: "gkdwivedy@gmail.com"},
+            {id: "1938927", name: "Ganji Naveen", email: "naveenkumar.ganji@carrier.com"},
+            {id: "1932231", name: "Gayatri Praveen Chavali", email: "cg.praveen@gmail.com"},
+            {id: "1934941", name: "GOPALAM SINDHU MADHAVI", email: "gopalam.sindhu@gmail.com"},
+            {id: "1934141", name: "GURUDEV ANKAM", email: "Gurudev.Ankam@kyndryl.com"},
+            {id: "1933807", name: "Harikrishna Gopalakrishnan", email: "Hari.gopal@hotmail.com"},
+            {id: "1938890", name: "Harinarayanan A", email: "a.harinarayanan@itc.in"},
+            {id: "1933754", name: "Harshit Mundada", email: "mundadaharsh@gmail.com"},
+            {id: "1934048", name: "Hemalatha Konakonla", email: "hemalatha.konakonla@gmail.com"},
+            {id: "1935382", name: "Ibrahim Mohammed", email: "Ibrahim.mngmnt@gmail.com"},
+            {id: "1936567", name: "ILANGATHIR S PADMANATHAN", email: "ilangathirsp@gmail.com"},
+            {id: "1933108", name: "Imthiyaz Gadiman", email: "imthiyazahmedg@gmail.com"},
+            {id: "1933921", name: "Jagatap Rajendra Prasad", email: "prasaj@live.com"},
+            {id: "1938927", name: "Jakkam Ramakrishna", email: "Ramakrishna.Jakkam@Carrier.com"},
+            {id: "1932975", name: "Jaya chandra kumar Godishala", email: "jayachandra.godishala@gmail.com"},
+            {id: "1933318", name: "JayaSudha Bachinappa", email: "jayasudha.b@gmail.com"},
+            {id: "1938900", name: "Jayesh Vasudevan Nair", email: "jayeshvasudevan.nair@carrier.com"},
+            {id: "1938917", name: "jeevan reddy", email: "jeevs1011@gmail.com"},
+            {id: "1932654", name: "Jeevi Reddy", email: "jeevireddy@gmail.com"},
+            {id: "1933588", name: "Jitendra Kunisetty", email: "jitendra.kunisetty@hitachids.com"},
+            {id: "1935724", name: "Joby Thampy", email: "jobythampy@gmail.com"},
+            {id: "1933762", name: "Juhi Jha", email: "jhajuhi08@gmail.com"},
+            {id: "1933588", name: "Jyothi Paladugu", email: "jyothi.paladugu@hitachids.com"},
+            {id: "1932792", name: "Kailash Prasad Chowdary", email: "kailashpc@gmail.com"},
+            {id: "1933619", name: "Kalyan Chakravorty Bhagavatula", email: "kalyanbhagavatula@gmail.com"},
+            {id: "1937247", name: "Kalyan Sathyavada", email: "ksathyavada@yahoo.com"},
+            {id: "1938507", name: "Kalyan Sathyavada", email: "ksathyavada@yahoo.com"},
+            {id: "1938858", name: "Kameswara Prasad", email: "kp_sreepada@yahoo.com"},
+            {id: "1932955", name: "Kanukollu Lakshman Kumar", email: "Kanukollu.lakshmankumar@gmail.com"},
+            {id: "1937589", name: "KAPIL SAIN", email: "kapilsmathur@gmail.com"},
+            {id: "1936607", name: "Kara Harshal", email: "karaharshal@gmail.com"},
+            {id: "1933985", name: "Kartheek Thumuluri", email: "kartheekthumuluri@gmail.com"},
+            {id: "1933607", name: "Karthik Karthik", email: "karthik.kulkarni.k@gmail.com"},
+            {id: "1933491", name: "Kasavaraju Koteswara Rao", email: "koteshmail@gmail.com"},
+            {id: "1937952", name: "Katta Harish", email: "harishnani8@gmail.com"},
+            {id: "1933170", name: "Keerti Pendyal", email: "keerti.pendyal@mahindrauniversity.edu.in"},
+            {id: "1933588", name: "Kiran Kokkonda", email: "kiran.kokkonda@hitachids.com"},
+            {id: "1932216", name: "KOLLI RAVINDRANATH", email: "kolliravi_58@rediffmail.com"},
+            {id: "1933845", name: "Komakula Ravindranath", email: "komakularavindra@gmail.com"},
+            {id: "1936643", name: "KONDURI LAXMAN SHASHIDHAR", email: "shashidhar_lk@yahoo.co.in"},
+            {id: "1936534", name: "Koshy P. Thomas", email: "koshyt2012@gmail.com"},
+            {id: "1938993", name: "Koteswarrao Arvapally", email: "koteswarraoarvapally@gmail.com"},
+            {id: "1936395", name: "Krishna Vijayashekaran", email: "kv0875@gmail.com"},
+            {id: "1938927", name: "Kumar Nishant", email: "nishant.kumar1@carrier.com"},
+            {id: "1933712", name: "Lagnajeet Behera", email: "lagnajeet_behera@outlook.com"},
+            {id: "1932887", name: "Lakshmi Narayana Yadavalli", email: "yadavalli31@gmail.com"},
+            {id: "1935705", name: "LAXMI SUSHUMA V", email: "omsaivls@gmail.com"},
+            {id: "1934122", name: "Leela VenkataSatish Kolla", email: "satish.klv@gmail.com"},
+            {id: "1938900", name: "Madhubabu Kandikuppa", email: "madhu.kandikuppa@carrier.com"},
+            {id: "1933945", name: "Madhusudhan Kalavakunta", email: "kmadhus@hotmail.com"},
+            {id: "1933222", name: "Maham Balaiah Mehanathan", email: "maham.mehanathan@gmail.com"},
+            {id: "1932517", name: "Mahesh Kumar Singh", email: "mail2mahesh24@gmail.com"},
+            {id: "1933726", name: "Malladi Krishna Sai Charan", email: "krishnasaicharan2007@gmail.com"},
+            {id: "1932994", name: "Mallela Chandrakanth Sharma", email: "mcksharma898@gmail.com"},
+            {id: "1933102", name: "Manikandan Sriganeshan", email: "s_mani94@yahoo.co.uk"},
+            {id: "1935392", name: "Manohar", email: "manoharsrigiriraju@gmail.com"},
+            {id: "1938944", name: "Manohar Meduri", email: "manu.meduri@gmail.com"},
+            {id: "1938864", name: "Manoj Kumar Arutla", email: "manojarutla9@gmail.com"},
+            {id: "1938772", name: "Mathew Lee Waters", email: "Mat.Waters@safran.com"},
+            {id: "1932970", name: "Mattaparthi Venkata Krishna Kishore", email: "mvkkin@yahoo.com"},
+            {id: "1938927", name: "MD Hussunuddin", email: "hussunuddin.mohammed@carrier.com"},
+            {id: "1938854", name: "MJ Dharani Kumar", email: "dharanikr.kumar83@gmail.com"},
+            {id: "1935202", name: "MOHAMMAD ABDULLAH SHAMIM", email: "abdullahshamim@gmail.com"},
+            {id: "1932562", name: "Mohammad Khan", email: "gmohd.khan@rocketmail.com"},
+            {id: "1932812", name: "Mohan Reddy Sama", email: "Mohan.Sama@Outlook.Com"},
+            {id: "1938559", name: "Mohit Mathur", email: "mrmathur@yahoo.com"},
+            {id: "1933755", name: "Mohit Sukhwani", email: "mohit.sukhwani73@gmail.com"},
+            {id: "1938917", name: "Mounika Tulasi", email: "jeevs1011@gmail.com"},
+            {id: "1938871", name: "Murali R", email: "murali@vedhase.com"},
+            {id: "1938842", name: "Muralidhar K", email: "muralidhar@nac.edu.in"},
+            {id: "1937349", name: "Muralidhar Nandiwada", email: "muralidhar.n@gmail.com"},
+            {id: "1932495", name: "Murthy SN", email: "NARASIMHASNM@YAHOO.COM"},
+            {id: "1938562", name: "N C Bhanumathi Devi", email: "bhanu.nittala@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938927", name: "Nadinla Rajesh Babu", email: "rajesh.nadinla@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1934062", name: "Nagapadmini Racha", email: "nagpadrac@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938838", name: "Nagaraju Ponugoti", email: "Pnraju021989@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932959", name: "Nagaraju Sankara Varma", email: "ngrvarma.n@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933267", name: "NAGENDRA PERI", email: "nagendra.peri@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932941", name: "Narasimha Rao Sanka", email: "Narasimha.510@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933588", name: "Narayana Grandhi", email: "narayana.grandhi@hitachids.com", checkedIn: false, pmiId: ""},
+            {id: "1936364", name: "Nikita Patel", email: "nikita.patel1803@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938885", name: "P Mohan", email: "mohan@gravitipharma.com", checkedIn: false, pmiId: ""},
+            {id: "1933242", name: "P V Shobhit", email: "pvshobhit@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938419", name: "Padmaja Satyavolu", email: "padmaja_kumar@hotmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938962", name: "Padmalatha Turaga", email: "padmatpl@yahoo.com", checkedIn: false, pmiId: ""},
+            {id: "1938865", name: "Pagidireddy Jyothsna", email: "Pagidireddyjyothsnareddy@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932962", name: "Paila Srikanth Babu", email: "Sree4up@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938844", name: "Pankaj Guduri", email: "pankaj.guduri@thermofisher.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Pankaj Kumar", email: "pankaj.kumar3@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1938836", name: "PARSHURAM MAURYA", email: "parshu230@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933280", name: "PAVAN KUMAR B V N S", email: "pavan0216@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938904", name: "Peddineni Mahesh Kumar", email: "mahesh.peddineni@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938829", name: "Phanindra Neela", email: "indra.neela@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1935387", name: "Phaniravi Kumar Betanabhatla", email: "mrarrowb@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938652", name: "POLEPALLE SATHYA VENKATESH", email: "psvenkatesh@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1934098", name: "Polisetty Venkata Raghuveer", email: "v.raghuveerpolisetty@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938341", name: "Poovannan C", email: "poovannanc@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933737", name: "Prachi Pyasi", email: "prachi.mishra0392@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938690", name: "Pradeep Manthena", email: "m.pradeep142@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1937887", name: "Pradeep Reddy Pasnoor", email: "pasnoor@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933955", name: "Pradeep Shekaran", email: "pradhu26@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932960", name: "Pramodh Kumar Tunguri", email: "pramodh.tunguri@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938423", name: "Prasad Godavarthi", email: "prasadgv@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932482", name: "Prasanjit Mandal", email: "prasan83@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1935388", name: "Prasanth Kumar", email: "prasanthkumar.ysl@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933588", name: "Prashant Banda", email: "prashant.banda@hitachids.com", checkedIn: false, pmiId: ""},
+            {id: "1932950", name: "Prashant Kanjilal", email: "prasant9153@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933404", name: "PRASHANTH BALANKHE", email: "prashanthbalankhe@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936627", name: "Prashanth Kumar Deshpande", email: "deshpandepk@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936547", name: "Prateek Bhandari", email: "prateek25.bhandari@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933282", name: "Praveen Chintala", email: "praveen_chintala@hotmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938793", name: "Praveen Kumar Botcha", email: "praveenkumar.botcha@medtronic.com", checkedIn: false, pmiId: ""},
+            {id: "1938866", name: "Praveen Kumar Narayandas", email: "praveen.narayandas@honeywell.com", checkedIn: false, pmiId: ""},
+            {id: "1938974", name: "Praveen Sanchana", email: "praveen.sancahana@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933374", name: "PraveenKumar Ilam", email: "ikumar@opentext.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Preethi Lingala", email: "preethi.lingala@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1935735", name: "PREMA MOHANTY", email: "premamohanty64@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933705", name: "Priyal Sharma", email: "priyalsharma144@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1935391", name: "Purushotham Raju", email: "salvaraju80@gmail.com", checkedIn: false, pmiId: ""},
+            { id: '1938847', name: 'R.Sathish Kumar', email: 'sathishkumar@nicmar.ac.in', checkedIn: false, pmiId: '' },
+            { id: '1938927', name: 'Rachakonda Annapurna', email: 'annapurna.rachakonda@carrier.com', checkedIn: false, pmiId: '' },
+            { id: '1932956', name: 'Radha Krishna Chirala', email: 'r.chirala@live.com', checkedIn: false, pmiId: '' },
+            { id: '1932946', name: 'Raghavendra Yammanuru', email: 'yammanuru@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1935699', name: 'Raghuram Eswara', email: 'emraghuram@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1938900', name: 'Rajan Singh', email: 'rajan.singh1@carrier.com', checkedIn: false, pmiId: '' },
+            { id: '1939024', name: 'Rajendra Prasad Yerraguntla', email: 'rajendra5037@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1935380', name: 'Rajesh Kumar', email: 'xiaowen06@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933588', name: 'Rajesh Palliyagaram', email: 'rajesh.palliyagaram@hitachids.com', checkedIn: false, pmiId: '' },
+            { id: '1933735', name: 'Rajiv Dadi', email: 'drajiv@deloitte.com', checkedIn: false, pmiId: '' },
+            { id: '1938821', name: 'Rajiv Kumar Dash', email: 'rajivkumar.dash@infosys.com', checkedIn: false, pmiId: '' },
+            { id: '1934106', name: 'Rakesh Khuntia', email: 'Rkhuntia20@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933736', name: 'Ram Prateek', email: 'mprathik.ram@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1934154', name: 'Rama Krishna A', email: 'Rama509@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933283', name: 'Rama Vijaya Kumar Satyavolu', email: 'rks@opentext.com', checkedIn: false, pmiId: '' },
+            { id: '1935385', name: 'Ramakanth Panda Kirtirai', email: 'Ramakanth.panda@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1938895', name: 'Ramakrishna Bhoga', email: 'ramakrishna.bhoga@thermofisher.com', checkedIn: false, pmiId: '' },
+            { id: '1932145', name: 'Ramam Atmakuri', email: 'ramam1960@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933478', name: 'RAMBABU NAIK', email: 'rambabunaik633@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933856', name: 'Ramesh Chepur', email: 'rameshchepur@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1935644', name: 'Ramesh Nalluri', email: 'ramesh.nalluri_phd.2022@woxsen.edu.in', checkedIn: false, pmiId: '' },
+            { id: '1935384', name: 'Ramya Vadlamani', email: 'ramyavadlamani@hotmail.com', checkedIn: false, pmiId: '' },
+            { id: '1932940', name: 'Ranadeer Sappidi', email: 'ranadeer.sappidi@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1938872', name: 'Ranjith Balagam Goud', email: 'ranjith.balagam@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1939025', name: 'Rashika', email: 'rashikaraj1206@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1938026', name: 'Rathan Kumar Bhavya', email: 'bhavyarathan@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933765', name: 'Ratnakar Kollimarla', email: 'ratnakarpmp@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1938621', name: 'Ravi Kiran Nori', email: 'ravinorik@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933691', name: 'Ravi Kumar Kanduri', email: 'rkkanduri@yahoo.co.in', checkedIn: false, pmiId: '' },
+            { id: '1934032', name: 'RAVI KUMAR POLA', email: 'ravikpola@gmail.com', checkedIn: false, pmiId: '' },
+            { id: '1933677', name: 'Ravinder Kaur', email: 'ravkaur9@yahoo.com', checkedIn: false, pmiId: '' },
+            { id: '1933791', name: 'Rhea Das', email: 'rhdas@deloitte.com', checkedIn: false, pmiId: '' },
+            { id: '1938456', name: 'Roshan Kumar Singh', email: 'roshans547@gmail.com', checkedIn: false, pmiId: '' },
+            {id: "1933740", name: "Sagar Shah", email: "sagar121shah@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1937377", name: "Sai Anumakonda", email: "sanumakonda@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938603", name: "Sai Anusha Kavya B", email: "anushkavya@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Sai Krishna Kunchala", email: "saikrishna.kunchala@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Sai Krishna Mallipeddi", email: "saikrishna.mallipeddi@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1938758", name: "Sai Muralidhar Tatiraju", email: "murali.tatiraju@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933451", name: "Sailaja Adda", email: "sailaja.adda@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932943", name: "Sajeeda Nasreen", email: "sajeeda_naaz@yahoo.co.in", checkedIn: false, pmiId: ""},
+            {id: "1934130", name: "Sandeep Gehlot", email: "gehlotsaab@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936420", name: "Sandeep Raukutam", email: "sandeep.raukutam@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933268", name: "Sandya", email: "sandhyachalapa36@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938802", name: "Sanket Mukherjee", email: "sanketneel1995@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932462", name: "SANTHOSH KUMAR VOOTNURI", email: "santhosh.vk@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938960", name: "SANTOSH KUMAR DASH", email: "skdash@bhel.in", checkedIn: false, pmiId: ""},
+            {id: "1932883", name: "Santosha Maroorkar", email: "Santosha.Maroorkar@intl.att.com", checkedIn: false, pmiId: ""},
+            {id: "1938927", name: "Sappati Pradeep Kumar", email: "pradeep.sappati@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1933295", name: "Sarat Babu", email: "sarat0109@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938927", name: "Sateesh Chandra Suswaram", email: "sateeshchandra.suswaram@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1933173", name: "Sateesh Kumar Chinta", email: "sateeshkumar.chinta@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933050", name: "Sathish Chirumamilla", email: "sathish.chirumamilla@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933588", name: "Satish Jammula", email: "satish.jammula@hitachids.com", checkedIn: false, pmiId: ""},
+            {id: "1938496", name: "Satya Koruprolu", email: "skoruprolu@opentext.com", checkedIn: false, pmiId: ""},
+            {id: "1933582", name: "Sayantan Bose", email: "sayantanbose82@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932088", name: "seema bhandarkar", email: "seema.bhandarkar101@biocon.com", checkedIn: false, pmiId: ""},
+            {id: "1938715", name: "seetapatirao chennapragada", email: "seetapatirao.chennapragada@otis.com", checkedIn: false, pmiId: ""},
+            {id: "1938534", name: "Seshu Ganti", email: "seshu90@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936626", name: "Shaik Nazia", email: "Nazia.shaik89@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1935359", name: "Shailendra Rao Chegoori", email: "shailendrarao@yahoo.co.in", checkedIn: false, pmiId: ""},
+            {id: "1933760", name: "Shalini Malladi", email: "malladishalini@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932561", name: "Shambo Banerjee", email: "shbaner@microsoft.com", checkedIn: false, pmiId: ""},
+            {id: "1938963", name: "Sharadajyoti Ralapalli", email: "rsharadajyoti@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938927", name: "Sharma Vikas", email: "Vikas.Sharma@Carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1933562", name: "Sheikh Sahanawaz Ahmed", email: "sahanawaza@hotmail.com", checkedIn: false, pmiId: ""},
+            {id: "1934135", name: "Shriniwas Shantkumar Yeramwar", email: "shreeyeramwar@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933707", name: "Shruti Sinha", email: "shrutsinha0111@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932143", name: "Shyam N", email: "nsk2pm@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938732", name: "Singaraju, V K Ravikiran", email: "ravikiran.svk@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938791", name: "Sita Mahalakshmi Durvasula", email: "dsmahalakshmi@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1937770", name: "Sivaprashanth Venkata Danturthy", email: "sivaprashanth@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936613", name: "SivaRamaKrishna Yanamandra", email: "ysrkrishna@hotmail.com", checkedIn: false, pmiId: ""},
+            {id: "1934076", name: "Smarana Basutkar", email: "Smarana.1947@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932958", name: "Smijo Vincent", email: "Smijo.Vincent@bofa.com", checkedIn: false, pmiId: ""},
+            {id: "1933630", name: "Sonali Gondane", email: "sonalivijay2989@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936642", name: "Sourajit Basu", email: "sourajitbasu@neulandlabs.com", checkedIn: false, pmiId: ""},
+            {id: "1933281", name: "sravanthi Valluripalli", email: "Valluripalli.sravanthi@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932209", name: "Sree Lakshmi M", email: "sreelakshmi3186@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932996", name: "Sree Nallagatla", email: "Sreenuvas.n@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932091", name: "SREEMAN NARAYAN MISHRA", email: "sreeman.mishra@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1934311", name: "Sreeram Nagireddy", email: "sreeram.nagireddy@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938973", name: "Srikanth Jagannatham", email: "Srikanth.Jagannatham@Carrier.com", checkedIn: false, pmiId: ""},
+             {id: "1935383", name: "Srikanth Tarigopula", email: "srikanthtari@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932939", name: "Srilekha Kaluvakunta", email: "srilekha.14885@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938388", name: "Srinivas Gudivada", email: "gudsri@outlook.com", checkedIn: false, pmiId: ""},
+            {id: "1938661", name: "Srinivas reddy eticala", email: "srini.eticala@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932949", name: "Srinivasa Rao Dudi", email: "Dsrinivasrao1@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932115", name: "Srinivasa Rao Kunapareddy", email: "kunapareddy.srinivas@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1937340", name: "Srinivasu Chowta", email: "srinivasuchowta@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933562", name: "SRIRAM BHASKARAN", email: "sriram.bvsm@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933332", name: "SRISAILAPU PRAVEEN", email: "praveensrisailapu@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938813", name: "STEPHEN PAPPACHEN", email: "stephen.pappachen@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Subhash Reddy Gopavaram", email: "subhash.gopavaram@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1933040", name: "Subrahmanyam", email: "subrahmanyam.bvs88@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938777", name: "subrahmanyam chandragiri", email: "subrahmanyam.chandragiri@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938897", name: "Subramanya Sharma Ganti", email: "subramanyaganti@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933111", name: "Sudarshan Bolla", email: "bolla.sudarshan@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933588", name: "Sudhakar Allamsetti", email: "sudhakar.allamsetti1@hitachids.com", checkedIn: false, pmiId: ""},
+            {id: "1938991", name: "sudhakar chevuturu", email: "sudhakarchev@yahoo.com", checkedIn: false, pmiId: ""},
+            {id: "1933724", name: "Sudhansu Sekhar Singh", email: "s.sudhansu@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1937362", name: "Sujay Kumar", email: "bsujaykumar@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933059", name: "Sundara Srikrishna Pankaj Kompella", email: "pankajkompella22@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933588", name: "Sunderrao Edulapally", email: "sunderrao.edulapally@hitachids.com", checkedIn: false, pmiId: ""},
+            {id: "1936631", name: "Suneel Yadavalli", email: "yadavalli_suneel@yahoo.com", checkedIn: false, pmiId: ""},
+            {id: "1933938", name: "Sunilkumar Krishnan", email: "sunilkumar.krishnan@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933757", name: "Sunny Chauhan", email: "suchauhan@deloitte.com", checkedIn: false, pmiId: ""},
+            {id: "1932957", name: "Suresh Bhat", email: "sureshgbhat@yahoo.com", checkedIn: false, pmiId: ""},
+            {id: "1933483", name: "Suresh Kumar Banda", email: "sureshbanda7860@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938900", name: "Suresh Tananki", email: "suresh.tananki@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1932111", name: "Suriyanarayanan Jeyapal", email: "jsuriyan@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938968", name: "Surya Chavatapalli", email: "surya.chavatapalli@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1935467", name: "Sushanta Banerjee", email: "jeorge.banerjee@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933074", name: "Syamala Bai Nalavatula", email: "syamalasrini27@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933713", name: "Syamala Bai Nalavatula", email: "syamalasrini27@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938984", name: "Syamsundar Seetepalli", email: "syam.1967@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1934138", name: "Tarun Kumar Mandal", email: "itstarun573@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936539", name: "TATA SURESH KUMAR", email: "tata.suresh@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1936614", name: "Tavish Singh Chadha", email: "tavish.chadha@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1935402", name: "Teena Rajput", email: "teena112415@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938583", name: "TEJ KIRAN PULAPARTI", email: "tejkiranp21@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1932715", name: "Uday Shankar Rajan", email: "udayshankar_rajan@yahoo.co.in", checkedIn: false, pmiId: ""},
+            {id: "1935326", name: "Udaya Bhaskar Chippa", email: "uday.chippa@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1938946", name: "Ujwal Surwade", email: "ujwalsurwade@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933286", name: "VADDALAPU PAVAN KUMAR", email: "vaddalapupavan@yahoo.co.in", checkedIn: false, pmiId: ""},
+            {id: "1938927", name: "Vadivelu Baburajan", email: "baburajan.vadivelu@carrier.com", checkedIn: false, pmiId: ""},
+            {id: "1937351", name: "vadlamani srinivas jagannadha prasad", email: "jagannadha.prasad@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1939016", name: "Vamshi Mahendra P", email: "mahendra.perumandla@gmail.com", checkedIn: false, pmiId: ""},
+            {id: "1933058", name: "Vasu T", email: "vasu.thiruveedu@gmail.com", checkedIn: false, pmiId: ""},
+            { id: '1932110', name: 'VEERA KISHORE REDDY DANDA', email: 'dvkishorereddy@gmail.com' },
+            { id: '1932952', name: 'VENKATA CHINNABABU ELLURI', email: 'venkata.elluri@gmail.com' },
+            { id: '1932974', name: 'Venkata Kasi Subrahmanyam Dudey', email: 'subrahmanyam.dudey@gmail.com' },
+            { id: '1938592', name: 'Venkata Reddy Chirla', email: 'venkat.chirla@gmail.com' },
+            { id: '1933288', name: 'VENKATA SIVA TEJA VEMURI', email: 'sivatejavemuri@gmail.com' },
+            { id: '1932106', name: 'Venkatasubramanian S', email: 's.venkatasubramanian01@hotmail.com' },
+            { id: '1932096', name: 'Vijay Kumar Sharoff', email: 'sharoffvijay24@gmail.com' },
+            { id: '1933588', name: 'Vijay Rekulapally', email: 'vijay.rekulapally@hitachids.com' },
+            { id: '1932142', name: 'Vijay S V', email: 'vittalam@hotmail.com' },
+            { id: '1938364', name: 'Vijay Vemana', email: 'vijay.vemana@gmail.com' },
+            { id: '1937936', name: 'Vikram Kanse', email: 'kvikram.nr@gmail.com' },
+            { id: '1938558', name: 'Vikramsena Reddy', email: 'vsreddy.pmp@gmail.com' },
+            { id: '1934134', name: 'VINAY KUMAR CHOLLETI', email: 'vinay.cholleti@gmail.com' },
+            { id: '1938057', name: 'Virendra Vikram Vishen', email: 'vvvishen2002@gmail.com' },
+            { id: '1937448', name: 'Vishweshwar reddy Kalavala', email: 'Vishu@janethalaw.com' },
+            { id: '1935696', name: 'VIVEK CHAUDHURY', email: 'vivek10506@gmail.com' },
+            { id: '1933936', name: 'Vunnava Lakshmi Narayana', email: 'lakvrao@gmail.com' },
+            { id: '1933054', name: 'Y Gopi rajendra', email: 'ygopirajendra@gmail.com' },
+            { id: '1937686', name: 'Yamira Chava', email: 'yamira.chava@gmail.com' },
+            { id: '1933671', name: 'Yarnagula Suresh Kumar', email: 'surubana@gmail.com' },
+            { id: '1934148', name: 'Yogesh Shivraj Deshpande', email: 'ysdeshpande@gmail.com' },
+            { id: '1933121', name: 'Zakkam anil kumar', email: 'anilzakkam@gmail.com' }
+        ];
+
+        const attendeeList = document.getElementById('attendee-list');
+        const searchInput = document.getElementById('search-input');
+        const downloadCsvButton = document.getElementById('download-csv');
+        const pmiIdInput = document.getElementById('pmi-id-input');
+
+        function renderAttendeeList(filterText = '') {
+            attendeeList.innerHTML = '';
+            attendees.forEach((attendee, index) => {
+                if (attendee.name.toLowerCase().includes(filterText.toLowerCase()) || attendee.id.includes(filterText)) {
+                    const attendeeItem = document.createElement('div');
+                    attendeeItem.className = 'attendee-item';
+                    attendeeItem.innerHTML = `
+                        <span>${attendee.name} (${attendee.id})</span>
+                        <button class="check-in-button ${attendee.checkedIn ? 'checked-in' : ''}" onclick="toggleCheckIn(${index})">
+                            ${attendee.checkedIn ? 'Undo Check-In' : 'Check-In'}
+                        </button>
+                    `;
+                    attendeeList.appendChild(attendeeItem);
+                }
+            });
+        }
+
+        function toggleCheckIn(index) {
+            attendees[index].checkedIn = !attendees[index].checkedIn;
+            if (attendees[index].checkedIn) {
+                attendees[index].pmiId = pmiIdInput.value;
+            } else {
+                delete attendees[index].pmiId;
+            }
+            renderAttendeeList(searchInput.value);
+        }
+
+        function downloadCsv() {
+            const checkedInAttendees = attendees.filter(attendee => attendee.checkedIn);
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "ID,Name,Email,PMI ID\n"
+                + checkedInAttendees.map(attendee => `${attendee.id},${attendee.name},${attendee.email},${attendee.pmiId || ''}`).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "checked_in_attendees.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        searchInput.addEventListener('input', (e) => renderAttendeeList(e.target.value));
+        downloadCsvButton.addEventListener('click', downloadCsv);
+
+        renderAttendeeList();
+    </script>
+</body>
+</html>
